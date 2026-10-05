@@ -1,5 +1,5 @@
 import React from 'react';
-import { Anchor, AlertTriangle, Flame, Droplets, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Anchor, AlertTriangle, Flame, ArrowRight, ShieldAlert } from 'lucide-react';
 
 interface MinskyCrisisModalProps {
   onDismiss: () => void;

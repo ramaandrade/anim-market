@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BookOpen, Bot, Brain, Anchor, Sliders, Layers, Activity } from 'lucide-react';
+import { X, BookOpen, Bot, Brain, Anchor, Sliders, Layers } from 'lucide-react';
 
 interface EducationalLabModalProps {
   onClose: () => void;

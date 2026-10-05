@@ -1,0 +1,2 @@
+# Disable Jekyll processing
+include: [".nojekyll", "js", "css", "static"]

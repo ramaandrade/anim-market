@@ -2,18 +2,25 @@
 
 @layer base {
   :root {
-    --sat: env(safe-area-inset-top);
-    --sab: env(safe-area-inset-bottom);
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   body {
     @apply bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white font-sans;
     overflow-x: hidden;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior-y: none;
   }
 }
 
-/* Custom animations & glow effects */
+/* Custom mobile animations & glow effects */
 @keyframes pulse-slow {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.85; transform: scale(1.02); }
@@ -21,49 +28,42 @@
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-4px); }
 }
 
 @keyframes alert-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-  50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); }
+  0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 28px rgba(239, 68, 68, 0.8); }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 2.5s ease-in-out infinite;
 }
 
 .animate-alert-glow {
-  animation: alert-glow 1.5s infinite;
+  animation: alert-glow 1.2s infinite;
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism mobile utility */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Hide scrollbar for mobile clean horizontal lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.6);
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

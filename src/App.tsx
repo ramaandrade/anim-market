@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Asset, 
   PortfolioPosition, 
@@ -15,6 +15,7 @@ import { sounds } from './utils/audio';
 
 import { Header } from './components/Header';
 import { TheoristAvatars } from './components/TheoristAvatars';
+import { TheoristFeed } from './components/TheoristFeed';
 import { TheoristDetailModal } from './components/TheoristDetailModal';
 import { MarketView } from './components/MarketView';
 import { PortfolioSummary } from './components/PortfolioSummary';
@@ -27,21 +28,17 @@ import { FinalReportModal } from './components/FinalReportModal';
 import { 
   Activity, 
   PieChart, 
-  History, 
+  Brain, 
   BookOpen, 
-  Sparkles, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  TrendingUp,
-  AlertOctagon
+  History
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const INITIAL_CAPITAL = 10000.0;
 
 export const App: React.FC = () => {
-  // Navigation tabs for mobile-first layout
-  const [activeTab, setActiveTab] = useState<'MARKET' | 'PORTFOLIO' | 'HISTORY'>('MARKET');
+  // Mobile Bottom Navigation Bar Tabs
+  const [activeTab, setActiveTab] = useState<'MARKET' | 'PORTFOLIO' | 'THEORISTS' | 'LAB'>('MARKET');
 
   // Game progression state
   const [currentMonth, setCurrentMonth] = useState<number>(1);
@@ -52,7 +49,7 @@ export const App: React.FC = () => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
 
   // Net worth tracking for metrics
-  const [netWorthHistory, setNetWorthHistory] = useState<number[]>([INITIAL_CAPITAL]);
+  const [, setNetWorthHistory] = useState<number[]>([INITIAL_CAPITAL]);
 
   // Audio mute state
   const [isMuted, setIsMuted] = useState<boolean>(sounds.isMuted);
@@ -149,7 +146,6 @@ export const App: React.FC = () => {
   const handleExecuteTrade = (asset: Asset, action: 'BUY' | 'SELL', shares: number) => {
     const baseValue = shares * asset.price;
 
-    // Check if buying speculative asset during euphoria (FOMO trade metric)
     if (action === 'BUY' && (asset.category === 'SPECULATIVE' || asset.category === 'TECH') && currentRegime === 'PONZI') {
       setFomoTradesCount((prev) => prev + 1);
     }
@@ -187,11 +183,9 @@ export const App: React.FC = () => {
 
       sounds.playTradeSuccess();
     } else {
-      // SELL action
       const existing = portfolio[asset.id];
       if (!existing || existing.shares < shares) return;
 
-      // Slippage deduction during liquidity crunch
       let slippagePct = 0;
       if ((currentRegime === 'PONZI' || currentRegime === 'MINSKY_MOMENT') && asset.liquidityScore < 70) {
         slippagePct = (100 - asset.liquidityScore) * 0.4;
@@ -223,7 +217,6 @@ export const App: React.FC = () => {
       sounds.playTradeSuccess();
     }
 
-    // Record transaction in history
     setTransactions((prev) => [
       {
         month: currentMonth,
@@ -243,7 +236,6 @@ export const App: React.FC = () => {
     sounds.playAdvance();
     const nextMonth = currentMonth + 1;
 
-    // Check for Dividend payouts on value assets
     let dividendCashReceived = 0;
     Object.values(portfolio).forEach((pos) => {
       const asset = assets.find((a) => a.id === pos.assetId);
@@ -258,21 +250,17 @@ export const App: React.FC = () => {
       setCash((prev) => prev + dividendCashReceived);
     }
 
-    // Anomaly triggers in campaign mode
     const anomalyInNextMonth = CAMPAIGN_PHASES.find(
       (p) => p.anomaly && p.anomaly.month === nextMonth
     )?.anomaly;
 
-    // Update asset prices based on cycle, factors, and anomalies
     setAssets((prevAssets) => {
       return prevAssets.map((asset) => {
         let returnRate = 0;
 
-        // Base risk-free return for Selic
         if (asset.category === 'RISK_FREE') {
-          returnRate = 0.0085; // approx 10.5% a.a.
+          returnRate = 0.0085;
         } else {
-          // General stochastic drift based on Beta and regime
           const marketShock = (Math.random() - 0.48) * 0.08;
           let regimeDrift = 0.01;
 
@@ -281,43 +269,37 @@ export const App: React.FC = () => {
           if (currentRegime === 'PONZI') regimeDrift = 0.06;
 
           returnRate = regimeDrift + asset.beta * marketShock;
-
-          // Pull towards intrinsic value over time
           const valuationDiscrepancy = (asset.intrinsicValue - asset.price) / asset.intrinsicValue;
           returnRate += valuationDiscrepancy * 0.05;
         }
 
-        // Apply explicit anomaly shocks if applicable
         if (anomalyInNextMonth) {
           if (anomalyInNextMonth.effect.targetAssetCategories.includes(asset.category)) {
             returnRate += (anomalyInNextMonth.effect.multiplier - 1);
           }
         }
 
-        // Special Minsky Moment crash mechanics at Month 13
         if (!isSandboxMode && nextMonth === 13) {
           if (asset.category === 'SPECULATIVE') {
-            returnRate = -0.75; // -75% crash
+            returnRate = -0.75;
           } else if (asset.category === 'TECH') {
-            returnRate = -0.48; // -48% drop
+            returnRate = -0.48;
           } else if (asset.category === 'SMALL_CAP') {
-            returnRate = -0.38; // -38% drop
+            returnRate = -0.38;
           } else if (asset.category === 'INDEX') {
-            returnRate = -0.22; // -22% drop
+            returnRate = -0.22;
           } else if (asset.category === 'VALUE') {
-            returnRate = -0.10; // -10% defensive drop
+            returnRate = -0.10;
           } else if (asset.category === 'HEDGE') {
-            returnRate = +0.12; // Gold surges +12%
+            returnRate = +0.12;
           } else if (asset.category === 'RISK_FREE') {
             returnRate = +0.0085;
           }
         }
 
-        // Compute new price with minimum barrier
         const newPrice = Math.max(0.5, asset.price * (1 + returnRate));
         const updatedHistory = [...asset.historicalPrices, newPrice];
 
-        // Liquidity reduction during crisis
         let newLiquidity = asset.liquidityScore;
         if (!isSandboxMode && nextMonth >= 13 && nextMonth <= 14) {
           if (asset.category === 'SPECULATIVE') newLiquidity = 15;
@@ -334,10 +316,8 @@ export const App: React.FC = () => {
       });
     });
 
-    // Update history of net worth
     setNetWorthHistory((prev) => [...prev, netWorth]);
 
-    // Check for triggered modals
     if (anomalyInNextMonth) {
       setActiveAnomaly(anomalyInNextMonth);
       sounds.playWarning();
@@ -353,12 +333,12 @@ export const App: React.FC = () => {
       sounds.playVictory();
       try {
         confetti({
-          particleCount: 100,
-          spread: 70,
+          particleCount: 80,
+          spread: 60,
           origin: { y: 0.6 }
         });
       } catch {
-        // Safe fallback
+        // Fallback
       }
     }
 
@@ -382,7 +362,6 @@ export const App: React.FC = () => {
     setActiveAnomaly(null);
   };
 
-  // Metrics for final synthesis
   const computedMetrics: GameMetrics = useMemo(() => {
     const totalReturnPct = ((netWorth - INITIAL_CAPITAL) / INITIAL_CAPITAL) * 100;
     const minskySurvivalRate = netWorth >= INITIAL_CAPITAL * 0.9 ? 0.95 : netWorth >= INITIAL_CAPITAL * 0.7 ? 0.75 : 0.45;
@@ -400,142 +379,94 @@ export const App: React.FC = () => {
   }, [netWorth, transactions, fomoTradesCount, anchoringMistakesCount, portfolioBeta]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
-      {/* Top Main Navigation Header */}
-      <Header
-        currentMonth={currentMonth}
-        totalMonths={15}
-        phaseName={currentPhase.name}
-        regime={currentRegime}
-        netWorth={netWorth}
-        initialCapital={INITIAL_CAPITAL}
-        cash={cash}
-        isMuted={isMuted}
-        onToggleMute={handleToggleMute}
-        onAdvanceMonth={handleAdvanceMonth}
-        onResetGame={handleResetGame}
-        onOpenLab={() => setShowLabModal(true)}
-        isSandboxMode={isSandboxMode}
-      />
-
-      {/* Real-Time Animated Theorists Advisory Row */}
-      <TheoristAvatars
-        currentQuotes={currentQuotes}
-        selectedTheoristId={selectedTheoristForDetail}
-        onSelectTheorist={(id) => setSelectedTheoristForDetail(id)}
-        onOpenLab={() => setShowLabModal(true)}
-      />
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-5 space-y-4 pb-20 sm:pb-8">
-        {/* Mobile Tab Navigation Dock (Visible on small screens) */}
-        <div className="flex sm:hidden bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs font-bold">
-          <button
-            onClick={() => setActiveTab('MARKET')}
-            className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-              activeTab === 'MARKET' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" />
-            Mercado
-          </button>
-          <button
-            onClick={() => setActiveTab('PORTFOLIO')}
-            className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-              activeTab === 'PORTFOLIO' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400'
-            }`}
-          >
-            <PieChart className="w-3.5 h-3.5" />
-            Carteira
-          </button>
-          <button
-            onClick={() => setActiveTab('HISTORY')}
-            className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-              activeTab === 'HISTORY' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400'
-            }`}
-          >
-            <History className="w-3.5 h-3.5" />
-            Extrato ({transactions.length})
-          </button>
-        </div>
-
-        {/* Narrative Banner for Current Phase */}
-        <div className="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-950/80 border border-indigo-800/80 px-2 py-0.5 rounded">
-                Objetivo da Fase
-              </span>
-              <span className="text-xs font-bold text-white">
-                {currentPhase.subtitle}
-              </span>
-            </div>
-            <p className="text-xs text-slate-300 mt-1">
-              {currentPhase.objective}
-            </p>
-          </div>
-
-          <button
-            onClick={() => setShowLabModal(true)}
-            className="self-start sm:self-center px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            Fórmulas & Modelos
-          </button>
-        </div>
-
-        {/* Portfolio Summary Overview */}
-        <PortfolioSummary
-          portfolio={portfolio}
-          assets={assets}
-          cash={cash}
+    <div className="w-full min-h-screen bg-slate-950 text-slate-100 flex justify-center selection:bg-indigo-500 selection:text-white">
+      {/* Mobile Smartphone Frame Container */}
+      <div className="w-full max-w-md min-h-screen bg-slate-950 flex flex-col relative shadow-2xl border-x border-slate-800/80">
+        {/* Mobile Header Bar */}
+        <Header
+          currentMonth={currentMonth}
+          totalMonths={15}
+          phaseName={currentPhase.name}
+          regime={currentRegime}
+          netWorth={netWorth}
           initialCapital={INITIAL_CAPITAL}
-          onTradeClick={handleOpenTrade}
+          cash={cash}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          onAdvanceMonth={handleAdvanceMonth}
+          onResetGame={handleResetGame}
+          onOpenLab={() => setShowLabModal(true)}
+          isSandboxMode={isSandboxMode}
         />
 
-        {/* Content based on Active View or Desktop Layout */}
-        <div className="space-y-4">
-          {/* Market View */}
-          <div className={`${activeTab === 'MARKET' ? 'block' : 'hidden sm:block'}`}>
-            <MarketView
-              assets={assets}
-              portfolio={portfolio}
-              regime={currentRegime}
-              onTradeClick={handleOpenTrade}
-            />
-          </div>
+        {/* Mobile Content Area (Padded for fixed bottom navigation dock) */}
+        <main className="flex-1 p-3 space-y-3 pb-24 overflow-y-auto">
+          {/* TAB 1: MERCADO */}
+          {activeTab === 'MARKET' && (
+            <div className="space-y-3">
+              {/* Top Theorist Story Chips */}
+              <TheoristAvatars
+                currentQuotes={currentQuotes}
+                selectedTheoristId={selectedTheoristForDetail}
+                onSelectTheorist={(id) => setSelectedTheoristForDetail(id)}
+                onOpenLab={() => setShowLabModal(true)}
+              />
 
-          {/* Transaction History (Visible on desktop or when tab is active) */}
-          <div className={`${activeTab === 'HISTORY' ? 'block' : 'hidden sm:block'}`}>
-            <div className="bg-slate-900/80 rounded-2xl border border-slate-800 p-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
-                <History className="w-4 h-4 text-indigo-400" />
-                Histórico de Ordens Executadas
-              </h3>
-              {transactions.length === 0 ? (
-                <p className="text-xs text-slate-500 py-3 text-center">
-                  Nenhuma ordem executada ainda neste ciclo.
-                </p>
-              ) : (
-                <div className="overflow-x-auto max-h-48 overflow-y-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-slate-400">
-                        <th className="pb-1.5">Mês</th>
-                        <th className="pb-1.5">Tipo</th>
-                        <th className="pb-1.5">Ativo</th>
-                        <th className="pb-1.5">Cotas</th>
-                        <th className="pb-1.5">Preço</th>
-                        <th className="pb-1.5 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/50">
-                      {transactions.slice(0, 10).map((tx, idx) => (
-                        <tr key={idx} className="hover:bg-slate-800/30">
-                          <td className="py-2 text-slate-400">Mês {tx.month}</td>
-                          <td className="py-2">
+              {/* Current Narrative Phase Banner */}
+              <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                <div className="min-w-0 pr-2">
+                  <span className="text-[10px] font-bold text-indigo-400 block truncate">
+                    {currentPhase.subtitle}
+                  </span>
+                  <p className="text-[11px] text-slate-300 leading-tight truncate">
+                    {currentPhase.objective}
+                  </p>
+                </div>
+              </div>
+
+              {/* Asset Market Cards */}
+              <MarketView
+                assets={assets}
+                portfolio={portfolio}
+                regime={currentRegime}
+                onTradeClick={handleOpenTrade}
+              />
+            </div>
+          )}
+
+          {/* TAB 2: CARTEIRA */}
+          {activeTab === 'PORTFOLIO' && (
+            <div className="space-y-3">
+              <PortfolioSummary
+                portfolio={portfolio}
+                assets={assets}
+                cash={cash}
+                initialCapital={INITIAL_CAPITAL}
+                onTradeClick={handleOpenTrade}
+              />
+
+              {/* Transaction History Card */}
+              <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-3 space-y-2">
+                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5 text-indigo-400" />
+                  Extrato de Ordens ({transactions.length})
+                </h4>
+
+                {transactions.length === 0 ? (
+                  <p className="text-[11px] text-slate-500 py-2 text-center">
+                    Nenhuma ordem executada ainda.
+                  </p>
+                ) : (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    {transactions.slice(0, 10).map((tx, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-950 p-2 rounded-xl border border-slate-800/80 flex items-center justify-between text-[11px]"
+                      >
+                        <div>
+                          <div className="flex items-center gap-1.5">
                             <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              className={`px-1 py-0.2 rounded font-bold text-[9px] ${
                                 tx.type === 'BUY'
                                   ? 'bg-emerald-950 text-emerald-400'
                                   : 'bg-rose-950 text-rose-400'
@@ -543,84 +474,155 @@ export const App: React.FC = () => {
                             >
                               {tx.type === 'BUY' ? 'COMPRA' : 'VENDA'}
                             </span>
-                          </td>
-                          <td className="py-2 font-mono font-bold text-white">{tx.ticker}</td>
-                          <td className="py-2 text-slate-200">{tx.shares}</td>
-                          <td className="py-2 font-mono text-slate-300">R$ {tx.price.toFixed(2)}</td>
-                          <td className="py-2 font-mono text-right font-bold text-white">
-                            R$ {tx.totalValue.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                            <span className="font-mono font-bold text-white">{tx.ticker}</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400">
+                            Mês {tx.month} • {tx.shares} cotas
+                          </span>
+                        </div>
+                        <div className="font-mono font-bold text-white text-xs">
+                          R$ {tx.totalValue.toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      </main>
+          )}
 
-      {/* Modals */}
-      {/* 1. Trade Modal */}
-      {tradeModal.isOpen && (
-        <TradeModal
-          asset={tradeModal.asset}
-          tradeType={tradeModal.action}
-          cash={cash}
-          position={tradeModal.asset ? portfolio[tradeModal.asset.id] : undefined}
-          regime={currentRegime}
-          portfolioBeta={portfolioBeta}
-          onClose={() => setTradeModal({ isOpen: false, asset: null, action: 'BUY' })}
-          onExecuteTrade={handleExecuteTrade}
-        />
-      )}
+          {/* TAB 3: TEÓRICOS (CHAT & FEED) */}
+          {activeTab === 'THEORISTS' && (
+            <TheoristFeed
+              currentQuotes={currentQuotes}
+              onSelectTheorist={(id) => setSelectedTheoristForDetail(id)}
+              onOpenLab={() => setShowLabModal(true)}
+            />
+          )}
 
-      {/* 2. Theorist Consultation Modal */}
-      {selectedTheoristForDetail && (
-        <TheoristDetailModal
-          theoristId={selectedTheoristForDetail}
-          onClose={() => setSelectedTheoristForDetail(null)}
-          currentSpeech={currentQuotes[selectedTheoristForDetail]}
-          regime={currentRegime}
-        />
-      )}
+          {/* TAB 4: LABORATÓRIO TEÓRICO */}
+          {activeTab === 'LAB' && (
+            <div className="space-y-3 pb-4">
+              <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+                <h3 className="text-sm font-black text-white flex items-center gap-1.5 mb-1">
+                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  Laboratório Teórico Mobile
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Explore as fórmulas e modelos que governam o comportamento dos preços.
+                </p>
+              </div>
 
-      {/* 3. Calendar Anomaly Card Modal */}
-      {activeAnomaly && (
-        <AnomalyCardModal
-          anomaly={activeAnomaly}
-          onDismiss={() => setActiveAnomaly(null)}
-        />
-      )}
+              <button
+                onClick={() => setShowLabModal(true)}
+                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs rounded-2xl shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Abrir Calculadora & Modelos Interativos</span>
+              </button>
+            </div>
+          )}
+        </main>
 
-      {/* 4. Minsky Crisis Klaxon Modal */}
-      {showMinskyCrashModal && (
-        <MinskyCrisisModal
-          onDismiss={() => setShowMinskyCrashModal(false)}
-        />
-      )}
+        {/* Mobile Fixed Bottom Navigation Dock (Thumb-friendly tab bar) */}
+        <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 pb-[max(env(safe-area-inset-bottom),0.5rem)] flex items-center justify-around shadow-2xl">
+          <button
+            onClick={() => setActiveTab('MARKET')}
+            className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'MARKET' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Activity className="w-5 h-5" />
+            <span className="text-[10px]">Mercado</span>
+          </button>
 
-      {/* 5. Educational Lab Modal */}
-      {showLabModal && (
-        <EducationalLabModal
-          onClose={() => setShowLabModal(false)}
-        />
-      )}
+          <button
+            onClick={() => setActiveTab('PORTFOLIO')}
+            className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'PORTFOLIO' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <PieChart className="w-5 h-5" />
+            <span className="text-[10px]">Carteira</span>
+          </button>
 
-      {/* 6. Final Report Synthesis Modal */}
-      {showFinalReport && (
-        <FinalReportModal
-          initialCapital={INITIAL_CAPITAL}
-          finalNetWorth={netWorth}
-          metrics={computedMetrics}
-          onRestart={handleResetGame}
-          onContinueSandbox={() => {
-            setShowFinalReport(false);
-            setIsSandboxMode(true);
-          }}
-        />
-      )}
+          <button
+            onClick={() => setActiveTab('THEORISTS')}
+            className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'THEORISTS' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Brain className="w-5 h-5" />
+            <span className="text-[10px]">Teóricos</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('LAB')}
+            className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'LAB' ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span className="text-[10px]">Laboratório</span>
+          </button>
+        </nav>
+
+        {/* Mobile Bottom Sheets & Dialogs */}
+        {tradeModal.isOpen && tradeModal.asset && (
+          <TradeModal
+            key={`${tradeModal.asset.id}-${tradeModal.action}`}
+            asset={tradeModal.asset}
+            tradeType={tradeModal.action}
+            cash={cash}
+            position={portfolio[tradeModal.asset.id]}
+            regime={currentRegime}
+            portfolioBeta={portfolioBeta}
+            onClose={() => setTradeModal({ isOpen: false, asset: null, action: 'BUY' })}
+            onExecuteTrade={handleExecuteTrade}
+          />
+        )}
+
+        {selectedTheoristForDetail && (
+          <TheoristDetailModal
+            theoristId={selectedTheoristForDetail}
+            onClose={() => setSelectedTheoristForDetail(null)}
+            currentSpeech={currentQuotes[selectedTheoristForDetail]}
+            regime={currentRegime}
+          />
+        )}
+
+        {activeAnomaly && (
+          <AnomalyCardModal
+            anomaly={activeAnomaly}
+            onDismiss={() => setActiveAnomaly(null)}
+          />
+        )}
+
+        {showMinskyCrashModal && (
+          <MinskyCrisisModal
+            onDismiss={() => setShowMinskyCrashModal(false)}
+          />
+        )}
+
+        {showLabModal && (
+          <EducationalLabModal
+            onClose={() => setShowLabModal(false)}
+          />
+        )}
+
+        {showFinalReport && (
+          <FinalReportModal
+            initialCapital={INITIAL_CAPITAL}
+            finalNetWorth={netWorth}
+            metrics={computedMetrics}
+            onRestart={handleResetGame}
+            onContinueSandbox={() => {
+              setShowFinalReport(false);
+              setIsSandboxMode(true);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

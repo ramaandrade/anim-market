@@ -1,6 +1,6 @@
 import React from 'react';
 import { AnomalyEvent } from '../types/market';
-import { Sparkles, Calendar, Bot, Brain, Anchor, ArrowRight, Zap } from 'lucide-react';
+import { Calendar, Bot, Brain, Anchor, ArrowRight, Zap } from 'lucide-react';
 
 interface AnomalyCardModalProps {
   anomaly: AnomalyEvent | null;

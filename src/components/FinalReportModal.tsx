@@ -3,16 +3,12 @@ import { GameMetrics } from '../types/market';
 import { 
   Trophy, 
   Award, 
-  TrendingUp, 
   Bot, 
   Brain, 
   Anchor, 
   Sparkles, 
   RotateCcw, 
-  Play, 
-  CheckCircle2, 
-  ShieldCheck,
-  Zap
+  Play
 } from 'lucide-react';
 
 interface FinalReportModalProps {

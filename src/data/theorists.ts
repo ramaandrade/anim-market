@@ -51,7 +51,7 @@ export const THEORISTS: Record<string, Theorist> = {
   }
 };
 
-export function getRegimeQuotes(regime: MinskyRegime, month: number): Record<string, TheoristSpeech> {
+export function getRegimeQuotes(regime: MinskyRegime, _month: number): Record<string, TheoristSpeech> {
   switch (regime) {
     case 'HEDGE':
       return {
