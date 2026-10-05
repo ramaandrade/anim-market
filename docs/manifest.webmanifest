@@ -1,0 +1,19 @@
+{
+  "name": "AnimMarket: Racionalidade vs. Emoção",
+  "short_name": "AnimMarket",
+  "description": "Aplicativo Web Gamificado de Teorias de Mercado Financeiro e Economia Comportamental",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
