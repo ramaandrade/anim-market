@@ -44,53 +44,53 @@ export const EducationalLabModal: React.FC<EducationalLabModalProps> = ({ onClos
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 bg-slate-950/60 overflow-x-auto scrollbar-none px-3 pt-2 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-2 bg-slate-950/80 border-b border-slate-800 text-xs">
           <button
             onClick={() => setActiveTab('CAPM')}
-            className={`px-3 py-2 rounded-t-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-2.5 py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center ${
               activeTab === 'CAPM'
-                ? 'bg-slate-900 text-cyan-400 border-t border-x border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-900 text-cyan-400 border border-slate-700 shadow-md'
+                : 'bg-slate-950/50 text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
-            <Bot className="w-4 h-4" />
-            1. CAPM & SML
+            <Bot className="w-4 h-4 shrink-0" />
+            <span className="truncate">1. CAPM & SML</span>
           </button>
 
           <button
             onClick={() => setActiveTab('FAMA_FRENCH')}
-            className={`px-3 py-2 rounded-t-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-2.5 py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center ${
               activeTab === 'FAMA_FRENCH'
-                ? 'bg-slate-900 text-emerald-400 border-t border-x border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-900 text-emerald-400 border border-slate-700 shadow-md'
+                : 'bg-slate-950/50 text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
-            <Layers className="w-4 h-4" />
-            2. Fama-French (Fatores)
+            <Layers className="w-4 h-4 shrink-0" />
+            <span className="truncate">2. Fama-French</span>
           </button>
 
           <button
             onClick={() => setActiveTab('MINSKY')}
-            className={`px-3 py-2 rounded-t-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-2.5 py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center ${
               activeTab === 'MINSKY'
-                ? 'bg-slate-900 text-amber-400 border-t border-x border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-900 text-amber-400 border border-slate-700 shadow-md'
+                : 'bg-slate-950/50 text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
-            <Anchor className="w-4 h-4" />
-            3. Regimes de Minsky
+            <Anchor className="w-4 h-4 shrink-0" />
+            <span className="truncate">3. Minsky</span>
           </button>
 
           <button
             onClick={() => setActiveTab('PROSPECT')}
-            className={`px-3 py-2 rounded-t-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-2.5 py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center ${
               activeTab === 'PROSPECT'
-                ? 'bg-slate-900 text-pink-400 border-t border-x border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-900 text-pink-400 border border-slate-700 shadow-md'
+                : 'bg-slate-950/50 text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
-            <Brain className="w-4 h-4" />
-            4. Teoria da Perspectiva
+            <Brain className="w-4 h-4 shrink-0" />
+            <span className="truncate">4. Perspectiva</span>
           </button>
         </div>
 

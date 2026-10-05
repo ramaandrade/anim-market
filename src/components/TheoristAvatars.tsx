@@ -18,8 +18,8 @@ export const TheoristAvatars: React.FC<TheoristAvatarsProps> = ({
   const theoristsList: TheoristId[] = ['capm_bot', 'dr_psyche', 'captain_minsky'];
 
   return (
-    <div className="w-full overflow-x-auto no-scrollbar py-1">
-      <div className="flex items-center gap-2 px-1 min-w-full">
+    <div className="w-full py-1">
+      <div className="grid grid-cols-3 gap-1.5 w-full">
         {theoristsList.map((id) => {
           const config = THEORISTS[id];
           const speech = currentQuotes[id];
@@ -29,7 +29,7 @@ export const TheoristAvatars: React.FC<TheoristAvatarsProps> = ({
             <button
               key={id}
               onClick={() => onSelectTheorist(id)}
-              className={`flex-1 min-w-[105px] p-2 rounded-xl border transition-all text-left flex items-center gap-2 cursor-pointer active:scale-95 ${
+              className={`w-full p-2 rounded-xl border transition-all text-left flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95 ${
                 isSelected
                   ? 'bg-slate-900 ring-1 ring-offset-1 ring-offset-slate-950 shadow-md'
                   : 'bg-slate-900/70 border-slate-800'

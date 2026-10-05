@@ -5,7 +5,8 @@ import {
   TrendingDown, 
   Anchor as AnchorIcon, 
   DollarSign,
-  Droplets
+  Droplets,
+  Filter
 } from 'lucide-react';
 
 interface MarketViewProps {
@@ -35,54 +36,69 @@ export const MarketView: React.FC<MarketViewProps> = ({
   return (
     <div className="w-full space-y-3 pb-4">
       {/* Factor Filter Navigation Pills (Fama-French & CAPM models) */}
-      <div className="overflow-x-auto no-scrollbar py-0.5">
-        <div className="flex items-center gap-1.5 min-w-max">
+      <div className="bg-slate-900/70 p-2.5 rounded-2xl border border-slate-800/80 space-y-2">
+        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 px-0.5">
+          <span className="flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-indigo-400" />
+            Filtros Fatoriais (Fama-French & Risco):
+          </span>
+          {factorFilter !== 'ALL' && (
+            <button
+              onClick={() => setFactorFilter('ALL')}
+              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer"
+            >
+              Ver Todos ({assets.length})
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => setFactorFilter('ALL')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               factorFilter === 'ALL'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'bg-slate-900 text-slate-400 border border-slate-800'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-1 ring-indigo-400'
+                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
             }`}
           >
             Todos ({assets.length})
           </button>
           <button
             onClick={() => setFactorFilter('VALUE')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               factorFilter === 'VALUE'
-                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
-                : 'bg-slate-900 text-slate-400 border border-slate-800'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30 ring-1 ring-amber-400'
+                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
             }`}
           >
             Valor (HML)
           </button>
           <button
             onClick={() => setFactorFilter('SMALL')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               factorFilter === 'SMALL'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                : 'bg-slate-900 text-slate-400 border border-slate-800'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-1 ring-emerald-400'
+                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
             }`}
           >
             Small (SMB)
           </button>
           <button
             onClick={() => setFactorFilter('HIGH_BETA')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               factorFilter === 'HIGH_BETA'
-                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
-                : 'bg-slate-900 text-slate-400 border border-slate-800'
+                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 ring-1 ring-rose-400'
+                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
             }`}
           >
             Alto Beta (&gt;1.5)
           </button>
           <button
             onClick={() => setFactorFilter('HEDGE')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               factorFilter === 'HEDGE'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30'
-                : 'bg-slate-900 text-slate-400 border border-slate-800'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30 ring-1 ring-sky-400'
+                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
             }`}
           >
             Refúgios / Hedges
